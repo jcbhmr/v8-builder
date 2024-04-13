@@ -18,25 +18,30 @@ jobs:
     permissions:
       contents: write
     outputs:
-      v8-tag: ${{ steps.checkout-tag.outputs.v8-tag }}
+      v8-tag: ${{ steps.get-v8-tag.outputs.v8-tag }}
       pushed: ${{ steps.add-commit-push.outputs.pushed }}
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: true
       - uses: ./setup-depot_tools
-      - run: gclient sync
-        working-directory: v8
-      - id: checkout-tag
+      - id: get-v8-sha
         run: |
           v8_sha=$(curl -fsSL https://chromiumdash.appspot.com/fetch_releases?channel=Stable \
-              | jq -r '.[0].hashes.v8')
-          git fetch --depth 1 origin "$v8_sha"
-          git checkout "$v8_sha"
-          git fetch --tags
-          v8_tag=$(git describe --tags "$v8_sha")
-          echo "v8-tag=$v8_tag" >> "$GITHUB_OUTPUT"
+            | jq -r '.[0].hashes.v8')
+          echo "v8-sha=$v8_sha" >> "$GITHUB_OUTPUT"
         working-directory: v8
+      - id: get-v8-tag
+        run: |
+          git fetch --tags
+          v8_tag=$(git describe --tags "$V8_SHA")
+          echo "v8-tag=$v8_tag" >> "$GITHUB_OUTPUT"
+        env:
+          V8_SHA: ${{ steps.get-v8-sha.outputs.v8-sha }}
+        working-directory: v8
+      - run: gclient sync --revision "v8@$V8_TAG"
+        env:
+          V8_TAG: ${{ steps.get-v8-tag.outputs.v8-tag }}
       - id: add-commit-push
         run: |
           git config --global user.name "actions[bot]"

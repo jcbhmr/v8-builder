@@ -1,3 +1,15 @@
+# V8 builder
+
+## Installation
+
+```sh
+curl -fsSL https://jcbhmr.me/v8-builder/download.sh | sh
+```
+
+```sh
+wget https://github.com/jcbhmr/v8-builder/releases/latest/download/v8-x86_64-windows-msvc.zip
+```
+
 ## Development
 
 - https://v8.dev/docs/version-numbers#which-v8-version-should-i-use%3F
