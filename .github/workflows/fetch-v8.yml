@@ -26,7 +26,6 @@ jobs:
       - uses: ./setup-depot_tools
       - run: fetch v8 --no-history
       - run: |
-          # https://v8.dev/docs/version-numbers#which-v8-version-should-i-use%3F
           v8_sha=$(curl -fsSL https://chromiumdash.appspot.com/fetch_releases?channel=Stable \
               | jq -r '.[0].hashes.v8')
           git -C v8 fetch origin "$v8_sha"
@@ -39,10 +38,10 @@ jobs:
           git commit -m "Automated changes" || exit 0
           git push -u origin main
           echo "pushed=true" >> "$GITHUB_OUTPUT"
-  gh-release-create:
-    needs: fetch-v8
-    if: fromJSON(needs.fetch-v8.outputs.pushed)
-    permissions:
-      contents: write
-    uses: ./.github/workflows/gh-release-create.yml
-    secrets: inherit
+  # gh-release-create:
+  #   needs: fetch-v8
+  #   if: fromJSON(needs.fetch-v8.outputs.pushed)
+  #   permissions:
+  #     contents: write
+  #   uses: ./.github/workflows/gh-release-create.yml
+  #   secrets: inherit
