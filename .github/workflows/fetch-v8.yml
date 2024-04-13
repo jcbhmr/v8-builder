@@ -1,5 +1,13 @@
 name: fetch v8
 on:
+  push:
+    branches: "main"
+    paths-ignore:
+      - README.md
+      - LICENSE
+      - .gitignore
+      - .github/**
+      - "!.github/workflows/fetch-v8.yml"
   schedule:
     - cron: "52 */6 * * *"
   workflow_dispatch:
@@ -7,8 +15,14 @@ concurrency: ${{ github.workflow }}
 jobs:
   fetch-v8:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      pushed: ${{ steps.add-commit-push.outputs.pushed }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - uses: ./setup-depot_tools
       - run: fetch v8 --no-history
       - run: |
@@ -17,3 +31,18 @@ jobs:
               | jq -r '.[0].hashes.v8')
           git -C v8 fetch origin "$v8_sha"
           git -C v8 checkout "$v8_sha"
+      - id: add-commit-push
+        run: |
+          git config --global user.name "actions[bot]"
+          git config --global user.email "actions@github.com"
+          git add -A
+          git commit -m "Automated changes" || exit 0
+          git push -u origin main
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+  gh-release-create:
+    needs: fetch-v8
+    if: fromJSON(needs.fetch-v8.outputs.pushed)
+    permissions:
+      contents: write
+    uses: ./.github/workflows/gh-release-create.yml
+    secrets: inherit
