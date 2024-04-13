@@ -1,4 +1,0 @@
-[submodule "v8"]
-	path = v8
-	url = https://chromium.googlesource.com/v8/v8.git
-	shallow = true
