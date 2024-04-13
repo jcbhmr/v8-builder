@@ -25,11 +25,13 @@ jobs:
           submodules: recursive
       - uses: ./setup-depot_tools
       - run: gclient sync
+        working-directory: v8
       - run: |
           v8_sha=$(curl -fsSL https://chromiumdash.appspot.com/fetch_releases?channel=Stable \
               | jq -r '.[0].hashes.v8')
-          git -C v8 fetch origin "$v8_sha"
-          git -C v8 checkout "$v8_sha"
+          git fetch --depth 1 origin "$v8_sha"
+          git checkout "$v8_sha"
+        working-directory: v8
       - id: add-commit-push
         run: |
           git config --global user.name "actions[bot]"
