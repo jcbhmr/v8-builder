@@ -24,7 +24,7 @@ jobs:
         with:
           submodules: recursive
       - uses: ./setup-depot_tools
-      - run: fetch v8 --no-history
+      - run: fetch --no-history v8
       - run: |
           v8_sha=$(curl -fsSL https://chromiumdash.appspot.com/fetch_releases?channel=Stable \
               | jq -r '.[0].hashes.v8')
