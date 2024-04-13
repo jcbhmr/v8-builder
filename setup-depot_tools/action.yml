@@ -1,0 +1,12 @@
+name: Setup depot_tools
+
+branding:
+  color: blue
+  icon: arrow-down-circle
+
+runs:
+  using: composite
+  steps:
+    - id: main
+      shell: bash
+      run: bash "${GITHUB_ACTION_PATH%/}/main.sh"

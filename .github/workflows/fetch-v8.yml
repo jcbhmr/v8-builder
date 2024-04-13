@@ -1,0 +1,19 @@
+name: fetch v8
+on:
+  schedule:
+    - cron: "52 */6 * * *"
+  workflow_dispatch:
+concurrency: ${{ github.workflow }}
+jobs:
+  fetch-v8:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./setup-depot_tools
+      - run: fetch v8 --no-history
+      - run: |
+          # https://v8.dev/docs/version-numbers#which-v8-version-should-i-use%3F
+          v8_sha=$(curl -fsSL https://chromiumdash.appspot.com/fetch_releases?channel=Stable \
+              | jq -r '.[0].hashes.v8')
+          git -C v8 fetch origin "$v8_sha"
+          git -C v8 checkout "$v8_sha"

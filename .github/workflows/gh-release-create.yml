@@ -1,5 +1,4 @@
-name: Build V8
-
+name: gh release create
 on:
   push:
     branches: [ master ]
