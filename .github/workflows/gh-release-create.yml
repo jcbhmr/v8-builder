@@ -2,12 +2,12 @@ name: gh release create
 on:
   workflow_dispatch:
     inputs:
-      version:
+      v8-tag:
         type: string
         required: true
   workflow_call:
     inputs:
-      version:
+      v8-tag:
         type: string
         required: true
 concurrency: ${{ github.workflow }}
@@ -22,7 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
-      # compress each "x86_64-linux-unknown-gnu" directory into a tar/zip file
       - run: |
           for f in *; do
             if [[ $f == *"-windows-"* ]]; then
@@ -33,8 +32,8 @@ jobs:
             rm -rf "$f"
           done
       - run: |
-          gh release create "v$VERSION" --generate-notes \
+          gh release create "$V8_TAG" --generate-notes \
             *.tar.gz *.zip
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ github.event.inputs.version }}
+          V8_TAG: ${{ github.event.inputs.v8-tag }}

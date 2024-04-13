@@ -1,4 +1,4 @@
-name: fetch v8
+name: Sync v8-tag.txt
 on:
   push:
     branches: "main"
@@ -7,13 +7,13 @@ on:
       - LICENSE
       - .gitignore
       - .github/**
-      - "!.github/workflows/fetch-v8.yml"
+      - "!.github/workflows/sync-v8-tag.yml"
   schedule:
     - cron: "52 */6 * * *"
   workflow_dispatch:
 concurrency: ${{ github.workflow }}
 jobs:
-  fetch-v8:
+  sync-v8-tag:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -22,40 +22,36 @@ jobs:
       pushed: ${{ steps.add-commit-push.outputs.pushed }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
       - uses: ./setup-depot_tools
       - id: get-v8-sha
         run: |
           v8_sha=$(curl -fsSL https://chromiumdash.appspot.com/fetch_releases?channel=Stable \
             | jq -r '.[0].hashes.v8')
           echo "v8-sha=$v8_sha" >> "$GITHUB_OUTPUT"
-        working-directory: v8
       - id: get-v8-tag
         run: |
-          git fetch --tags
-          v8_tag=$(git describe --tags "$V8_SHA")
+          v8_tag=$(git ls-remote -t https://github.com/v8/v8.git | grep "$V8_SHA" | cut -f2 | cut -d/ -f3)
           echo "v8-tag=$v8_tag" >> "$GITHUB_OUTPUT"
+          echo "$v8_tag" > v8-tag.txt
         env:
           V8_SHA: ${{ steps.get-v8-sha.outputs.v8-sha }}
-        working-directory: v8
-      - run: gclient sync --revision "v8@$V8_TAG"
-        env:
-          V8_TAG: ${{ steps.get-v8-tag.outputs.v8-tag }}
       - id: add-commit-push
         run: |
           git config --global user.name "actions[bot]"
           git config --global user.email "actions@github.com"
           git add -A
-          git commit -m "Automated changes" || exit 0
-          git push -u origin main
-          echo "pushed=true" >> "$GITHUB_OUTPUT"
+          if git commit -m "Automated changes"; then
+            git push -u origin main
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
+          fi
   gh-release-create:
-    needs: fetch-v8
-    if: fromJSON(needs.fetch-v8.outputs.pushed)
+    needs: sync-v8-tag
+    if: fromJSON(needs.sync-v8-tag.outputs.pushed)
     permissions:
       contents: write
     uses: ./.github/workflows/gh-release-create.yml
     with:
-      version: ${{ needs.fetch-v8.outputs.v8-tag }}
+      v8-tag: ${{ needs.sync-v8-tag.outputs.v8-tag }}
     secrets: inherit
