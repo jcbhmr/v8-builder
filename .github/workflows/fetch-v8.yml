@@ -18,6 +18,7 @@ jobs:
     permissions:
       contents: write
     outputs:
+      v8-tag: ${{ steps.checkout-tag.outputs.v8-tag }}
       pushed: ${{ steps.add-commit-push.outputs.pushed }}
     steps:
       - uses: actions/checkout@v4
@@ -26,11 +27,15 @@ jobs:
       - uses: ./setup-depot_tools
       - run: gclient sync
         working-directory: v8
-      - run: |
+      - id: checkout-tag
+        run: |
           v8_sha=$(curl -fsSL https://chromiumdash.appspot.com/fetch_releases?channel=Stable \
               | jq -r '.[0].hashes.v8')
           git fetch --depth 1 origin "$v8_sha"
           git checkout "$v8_sha"
+          git fetch --tags
+          v8_tag=$(git describe --tags "$v8_sha")
+          echo "v8-tag=$v8_tag" >> "$GITHUB_OUTPUT"
         working-directory: v8
       - id: add-commit-push
         run: |
@@ -40,10 +45,12 @@ jobs:
           git commit -m "Automated changes" || exit 0
           git push -u origin main
           echo "pushed=true" >> "$GITHUB_OUTPUT"
-  # gh-release-create:
-  #   needs: fetch-v8
-  #   if: fromJSON(needs.fetch-v8.outputs.pushed)
-  #   permissions:
-  #     contents: write
-  #   uses: ./.github/workflows/gh-release-create.yml
-  #   secrets: inherit
+  gh-release-create:
+    needs: fetch-v8
+    if: fromJSON(needs.fetch-v8.outputs.pushed)
+    permissions:
+      contents: write
+    uses: ./.github/workflows/gh-release-create.yml
+    with:
+      version: ${{ needs.fetch-v8.outputs.v8-tag }}
+    secrets: inherit

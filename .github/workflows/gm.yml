@@ -1,0 +1,51 @@
+name: gm
+on:
+  push:
+    branches: ["main"]
+    paths-ignore:
+      - .gitignore
+      - README.md
+      - LICENSE
+      - .github/**
+      - "!.github/workflows/gm.yml"
+  pull_request:
+    paths-ignore:
+      - .gitignore
+      - README.md
+      - LICENSE
+      - .github/**
+      - "!.github/workflows/gm.yml"
+  workflow_call:
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  gm:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-linux-unknown-gnu
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os: macos-latest
+            target: x86_64-apple-darwin
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: ./setup-depot_tools
+      - run: gclient sync
+        working-directory: v8
+      - if: runner.os == 'Linux'
+        run: ./build/install-build-deps.sh
+        working-directory: v8
+      - run: tools/dev/gm.py x64.release
+        working-directory: v8
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: v8/out.gn
