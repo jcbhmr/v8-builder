@@ -22,7 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: true
       - uses: ./setup-depot_tools
       - run: gclient sync
         working-directory: v8
