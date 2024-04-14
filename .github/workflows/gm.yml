@@ -28,10 +28,13 @@ jobs:
         include:
           - os: ubuntu-latest
             target: x86_64-linux-unknown-gnu
+            gen: x64.release
           - os: windows-latest
             target: x86_64-pc-windows-msvc
+            gen: x64.release
           - os: macos-latest
             target: x86_64-apple-darwin
+            gen: x64.release
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -41,7 +44,12 @@ jobs:
       - if: runner.os == 'Linux'
         run: ./build/install-build-deps.sh
         working-directory: v8
-      - run: tools/dev/gm.py x64.release
+      - run: |
+          # tools/dev/gm.py
+          tools/dev/v8gen.py "$GEN"
+          ninja -C out.gn/"$GEN" v8
+        env:
+          GEN: ${{ matrix.gen }}
         working-directory: v8
       - uses: actions/upload-artifact@v4
         with:

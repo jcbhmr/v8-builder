@@ -30,7 +30,7 @@ jobs:
           echo "v8-sha=$v8_sha" >> "$GITHUB_OUTPUT"
       - id: get-v8-tag
         run: |
-          v8_tag=$(git ls-remote -t https://github.com/v8/v8.git | grep "$V8_SHA" | cut -f2 | cut -d/ -f3)
+          v8_tag=$(git ls-remote -t https://chromium.googlesource.com/v8/v8.git 2>/dev/null | grep "$V8_SHA" | cut -f2 | cut -d/ -f3 | head -n1)
           echo "v8-tag=$v8_tag" >> "$GITHUB_OUTPUT"
           echo "$v8_tag" > v8-tag.txt
         env:
