@@ -29,12 +29,12 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-linux-unknown-gnu
             gen: x64.release
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            gen: x64.release
-          - os: macos-latest
-            target: x86_64-apple-darwin
-            gen: x64.release
+          # - os: windows-latest
+          #   target: x86_64-pc-windows-msvc
+          #   gen: x64.release
+          # - os: macos-latest
+          #   target: x86_64-apple-darwin
+          #   gen: x64.release
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
