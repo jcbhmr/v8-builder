@@ -36,6 +36,9 @@ jobs:
           #   target: x86_64-apple-darwin
           #   gen: x64.release
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
       - uses: ./setup-depot_tools
