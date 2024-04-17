@@ -13,19 +13,24 @@ generate() (
 )
 
 build() (
-    cd v8/v8
+    cd v8
+    gclient sync
 
+    cd v8
     if [[ $(uname -s) == "Linux" ]]; then
         ./build/install-build-deps.sh
     fi
 
     gen="x64.release"
-    tools/dev/gm.py "$gen"
-
-    # tools/dev/v8gen.py "$gen"
-    # ninja -C out.gn/"$gen" v8
-
-    cd -
+    # tools/dev/gm.py "$gen"
+    tools/dev/v8gen.py "$gen" -vv -- '
+is_component_build = true
+use_custom_libcxx = false
+'
+    ninja -C out.gn/"$gen" v8
+    
+    cd ../..
+    echo done
 )
 
 "$@"

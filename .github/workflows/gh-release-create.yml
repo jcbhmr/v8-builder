@@ -1,8 +1,7 @@
 name: gh release create
 on:
   workflow_dispatch:
-  workflow_call:
-concurrency: ${{ github.workflow }}-gh-release-create
+concurrency: ${{ github.workflow }}
 jobs:
   gm:
     uses: ./.github/workflows/gm.yml

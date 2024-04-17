@@ -18,7 +18,7 @@ on:
   workflow_call:
   workflow_dispatch:
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}-gm
   cancel-in-progress: true
 jobs:
   gm:
@@ -41,20 +41,13 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: ./setup-depot_tools
-      - run: fetch v8
-      - run: gclient sync --revision "v8@$(cat v8-tag.txt)"
-      - if: runner.os == 'Linux'
-        run: ./build/install-build-deps.sh
-        working-directory: v8
-      - run: |
-          # tools/dev/gm.py
-          tools/dev/v8gen.py "$GEN"
-          ninja -C out.gn/"$GEN" v8
+      - run: ./task.sh build
         env:
           GEN: ${{ matrix.gen }}
-        working-directory: v8
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}
-          path: v8/out.gn
+          path: v8/v8/out.gn
