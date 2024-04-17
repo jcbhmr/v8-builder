@@ -1,5 +1,15 @@
 # V8 builder
 
+🎱 v8 compiled artifacts & binaries published as GitHub releases
+
+<table><td>
+
+```sh
+curl -fsSL https://jcbhmr.me/v8-builder/install.sh | sh -s -- -olib
+```
+
+</table>
+
 ## Installation
 
 ```sh

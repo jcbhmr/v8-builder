@@ -1,16 +1,8 @@
 name: gh release create
 on:
   workflow_dispatch:
-    inputs:
-      v8-tag:
-        type: string
-        required: true
   workflow_call:
-    inputs:
-      v8-tag:
-        type: string
-        required: true
-concurrency: ${{ github.workflow }}
+concurrency: ${{ github.workflow }}-gh-release-create
 jobs:
   gm:
     uses: ./.github/workflows/gm.yml
